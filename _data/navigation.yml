@@ -1,0 +1,16 @@
+# Site navigation links
+
+- title: Home
+  url: /
+
+- title: Publications
+  url: /publications
+
+- title: Blog
+  url: /blog/
+
+- title: "Will's CV"
+  url: /assets/CV_waoverholt_20150410.pdf
+
+- title: Search
+  url: /search/

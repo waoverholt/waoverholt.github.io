@@ -1,0 +1,74 @@
+---
+layout: post
+title: Testing Metagenomic Assemblers - IDBA-UD
+image:
+  teaser: de_bruign_graph.jpg
+  credit: Berger et al., 2013, Nature Rev. Genetics
+  creditlink: http://www.nature.com/nrg/journal/v14/n5/fig_tab/nrg3433_F1.html
+excerpt: "Testing out and learning to use some Metagenomic assemblers. Starting with IDBA-UD, SPAdes, and Velvet. Will be progressing to binning and de novo genome construction next." 
+---
+* Table of Contents
+{:toc}
+
+##IDBA-UD
+I am planning on generating fairly large metagenomic and metatranscriptomic datasets within the next few months. Since I have a little bit of down time while some 16S datasets run through my pipeline, I thought I'd play around with some simulated and publicly available datasets.
+
+One of my good friends recommended starting with [IDBA-UD](http://i.cs.hku.hk/~alse/hkubrg/projects/idba_ud/). I thought I'd try this medium to record my experiences as I'm in the middle of updating my personal website as well.
+
+Installing IDBA:
+{% highlight bash %}
+git clone https://github.com/loneknightpy/idba
+cd idba
+./build.sh
+{% endhighlight%}
+
+Using the author's simulated datasets to test the install
+{% highlight bash %}
+#Copy the provided data files, un-tar them, and enter the directory
+wget http://hku-idba.googlecode.com/files/lacto-genus.tar.gz
+tar -zxvf lacto-genus.tar.gz
+cd lacto-genus
+
+#Run the sim_reads command as provided by the authors
+sim_reads sim_reads 220668.fa 220668.reads-10 --paired --depth 10 & sim_reads 321956.fa 321956.reads-100 --paired --depth 100 & sim_reads 557433.fa 557433.reads-1000 --paired --depth 1000 
+
+#concatenate the simulated files into "meta.fa"
+ls | grep "reads" | xargs -I file cat file >> meta.fa
+
+#Test the idba_ud command
+idba_ud -r meta.fa -o idba_meta_assembly
+
+{% endhighlight %}
+
+Testing on a different dataset
+Using only sample BP101
+
+Using multiple different sizes:
+{% highlight bash %}
+head -n 51855188 BP101.CoupledReads.fa > BP101_10.fa &
+head -n 5185518 BP101.CoupledReads.fa > BP101_1.fa &
+{% endhighlight %}
+{% comment %}
+<style>
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+    border:2px solid #ff0000;
+}
+
+th{
+    border:2px solid #000000;
+}
+
+td{
+    border:1px solid #000000;
+}
+</style>
+{% endcomment %}
+
+Dataset|Time|Test|
+-------|:----:|----:|
+1%     |13m34|test|
+10%    |161m24|test|
+
+##SPAdes
