@@ -3,6 +3,7 @@ layout: post
 title: Managing this website with Git and Github
 image:
   teaser: github-logo.jpg
+excerpt: Hosting this website on Github and working with git version control.
 ---
 * Table of Contents
 {:toc}
@@ -80,6 +81,4 @@ git merge development
 
 git push --all
 {% endhighlight %}
-
-
 
