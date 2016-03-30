@@ -8,12 +8,11 @@ excerpt: Hosting this website on Github and working with git version control.
 * Table of Contents
 {:toc}
 
-## Testing
 While I have some experience playing around with git, I never actually fully incorporated it into my workflows. As this is a skill I want to learn and utilize (I've messed up a script so many times in the past and been unable to figure out what the hell I changed) I figured this would be a good venue to start with. I'm in the middle of updating my static html personal website, to one based on Jekyll with a theme provided by Minimal Mistakes (so-simple), and I'm working on new (for me) metagenomic workflows and have written a few summary scripts in this regards.
 
 This entry will likely be read by me every time I add a new blog entry to this website as it concerns hosting both my websites source files, and the production ready site. I followed David Ensinger's post [Deploying Jekyll with Plugins to GitHub Pages](http://davidensinger.com/2013/04/deploying-jekyll-to-github-pages/) to start (nearly verbatium at parts).
 
-##Setting up my Jekyll Page on Github
+## Setting up my Jekyll Page on Github
 Initializing the git repository.
 {% highlight bash %}
 git init
@@ -51,7 +50,7 @@ Push all branches (source, master) to origin (my github repository)
 git push --all origin
 {% endhighlight %}
 
-##Updating a development version of the site
+## Updating a development version of the site
 Make sure I'm working on the development branch
 {% highlight bash %}
 git checkout development
@@ -70,7 +69,7 @@ bundle exec jekyll serve
 {% endhighlight %}
 
 
-##Updating my production site
+## Updating my production site
 After I'm happy with the content I've added and tested on my development site. I checkout my master branch, the merge the development changes. I also do the same with my source branch. This seems very redundant to me and there is likely a better way of doing this!
 
 {% highlight bash %}
