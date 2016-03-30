@@ -5,7 +5,7 @@ locale: en_US
 description: Will's personal website
 logo: will_header_small.png
 search: true
-url: http://localhost:4000
+url: ''
 
 # Jekyll configuration
 
