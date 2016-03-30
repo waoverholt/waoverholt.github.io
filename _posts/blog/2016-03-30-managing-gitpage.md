@@ -69,6 +69,17 @@ bundle exec jekyll serve
 
 
 ##Updating my production site
+After I'm happy with the content I've added and tested on my development site. I checkout my master branch, the merge the development changes. I also do the same with my source branch. This seems very redundant to me and there is likely a better way of doing this!
+
+{% highlight bash %}
+git checkout master
+git merge development
+
+git checkout source
+git merge development
+
+git push --all
+{% endhighlight %}
 
 
 
