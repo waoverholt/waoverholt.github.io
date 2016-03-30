@@ -8,6 +8,7 @@ excerpt: Hosting this website on Github and working with git version control.
 * Table of Contents
 {:toc}
 
+## Testing
 While I have some experience playing around with git, I never actually fully incorporated it into my workflows. As this is a skill I want to learn and utilize (I've messed up a script so many times in the past and been unable to figure out what the hell I changed) I figured this would be a good venue to start with. I'm in the middle of updating my static html personal website, to one based on Jekyll with a theme provided by Minimal Mistakes (so-simple), and I'm working on new (for me) metagenomic workflows and have written a few summary scripts in this regards.
 
 This entry will likely be read by me every time I add a new blog entry to this website as it concerns hosting both my websites source files, and the production ready site. I followed David Ensinger's post [Deploying Jekyll with Plugins to GitHub Pages](http://davidensinger.com/2013/04/deploying-jekyll-to-github-pages/) to start (nearly verbatium at parts).
