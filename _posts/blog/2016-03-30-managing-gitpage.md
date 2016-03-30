@@ -82,3 +82,8 @@ git merge development
 git push --all
 {% endhighlight %}
 
+An easier way to update both master and source from the development.
+{% highlight bash %}
+git checkout development
+git pull . development
+{% endhighlight %}
