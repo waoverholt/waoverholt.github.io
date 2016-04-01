@@ -5,7 +5,6 @@ excerpt: "Will's personal website."
 modified: 2016-03-28
 image:
   feature: ship_sunset_cropped.jpg
-  credit: Will Overholt
 ---
 
 ## Overview
