@@ -2,6 +2,7 @@
 layout: post
 title: Refining 16S Analysis for Deep Ocean Sediments
 excerpt: "Tracking progress on finalizing deep ocean 16S sequence analysis"
+custom_js: collapse
 ---
 
 * Table of Contents
@@ -85,6 +86,9 @@ I can then concatenate all chimera-depleted fasta files into a new file called "
 
 The pipeline for running this on our cluster is in 2 files, a PBS script that contains the commands, and a submission script that will run this PBS on each individual sequence library. I'm working on getting a javascript implemented to collapse this section.
 
+<script src="/assets/js/collapse.js" type="text/javascript"></script>
+<h3 style="cursor: pointer;">Our Cluster Code</h3>
+<div class="collapse">
 {% highlight bash %}
 #PBS -N testing_multiple_job_submission
 #PBS -l nodes=1:ppn=1
@@ -130,7 +134,7 @@ do
     BASE=${FILE%.fasta}
     qsub -v INFILE=$FILE,OUTFILE="$BASE.derep.fasta",UCFILE="$BASE.uc",CHIMFILE="$BASE.chimeras.fasta",MAPFILE="$BASE.uc.map",BADSEQIDS="$BASE.badseqids.txt",BADOTUFILE="$BASE.otu_chim.txt",NOCHIM="$BASE.nochim.fasta" job_scripts/multiple_qsub_test.pbs
 {% endhighlight %}
+</div>
 
-
-##OTU Picking
+## OTU Picking
 Although I'm well aware the following is a suboptimal approach after the recent publications from the Schloss lab, I'm stuck with trying to 
