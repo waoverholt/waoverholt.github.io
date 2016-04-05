@@ -48,93 +48,136 @@ Next, using the GA Tech biocluster environment I ran the series of commands in p
 usearch -derep_fulllength ${INFILE} -output ${OUTFILE} -uc ${UCFILE} -sizeout &&
 {% endhighlight %}
 
-2) Identify chimeras using the denovo detection
+2) Identify chimeras using the denovo detection and export the nonchimeras
 {% highlight bash %}
-usearch -uchime_denovo ${OUTFILE} -chimeras ${CHIMFILE} &&
+usearch -uchime_denovo ${OUTFILE} -nonchimeras ${NONCHIMFILE} &&
 {% endhighlight %}
  
-3) Convert the dereplicate UC file (from step 1) to a qiime mapping file
+3) From those remaining sequences ID reference based chimeras agains't silva's gold database
+{% highlight bash %}
+usearch1.7.0 -uchime_ref ${NONCHIMFILE} -db /nv/hp10/woverholt3/data/program_files/Silva_ref_dbs/silva.gold.notalign.fasta -nonchimeras ${NONCHIMNONREF} -strand plus &&
+{% endhighlight %}
+
+4) Convert the dereplicate UC file (from step 1) to a qiime mapping file
+I need this to go back and "rereplicate" the sequences before OTU picking
 {% highlight bash %}
 convert_uc2map.py ${UCFILE} > ${MAPFILE} &&
 {% endhighlight %}
 
-4) Grab all chimeric singletons
-This step is needed because the OTU map file doesn't include singletons and we want to remove ALL chimeras, not just those with >1 sequences.
+5) Identify dereplicated sequence headers representing nonchimeras (each representing a cluster of identical sequences). I grab only those greater than size 1, since the qiime mapping file does not have single tons present (these are handled next).
 {% highlight bash %}
-#Perl commandline, search chimera fasta file for sequences with size=1, and print out the name of that sequence ID to a new file (BADSEQIDS)
-perl -ne 'if ($_ =~ m/>/ && $_ =~ m/size=1;/) { ($ID = $_) =~ s/>(.*);size.*/$1/; print $ID }' ${CHIMFILE} > ${BADSEQIDS} &&
+perl -ne 'if ($_ =~ m/>/ && $_ !~ m/size=1;/) {($ID = $_) =~ s/>(.*);size.*/$1/; print $ID;}' ${NONCHIMNONREF} > ${GOODOTUFILE} &&
 {% endhighlight %}
 
-5) Grab the names of all the chimeric sequences that are not singletons
-This seems a bit strange to do this in 2 steps. In the end I want a list of all sequences (before dereplication) that are chimeric. So I need to be able to go back and "re-replicate" the sequences.
-
+6) Identify all the nonchimeric singletons (missing from the otu mapping file)
 {% highlight bash %}
-perl -ne 'if ($_ =~ m/>/ && $_ !~ m/size=1;/) {($ID = $_) =~ s/>(.*);size.*/$1/; print $ID;}' ${CHIMFILE} > ${BADOTUFILE} &&
+perl -ne 'if ($_ =~ m/>/ && $_ =~ m/size=1;/) { ($ID = $_) =~ s/>(.*);size.*/$1/; print $ID }' ${NONCHIMNONREF} > ${GOODSEQIDS} &&
 {% endhighlight %}
 
-6) Grab all the original sequences affiliated with a chimera (all identical sequences that were dereplicated in the first step) and add them to the chimeric singletons
+7) Merge the two sequence ID lists together as input for qiime's filter_fasta
+Note the double escapes in the perl command, I didn't quite figure why this was necessary, but it took me WAAY too long to get it to work. 
 {% highlight bash %}
-join -j 1 <(sort -k 1 ${BADOTUFILE}) <(sort -k 1 ${MAPFILE}) | perl -pe 's/\s/\n/g' >> ${BADSEQIDS}
+join -j 1 <(sort -k 1 ${GOODOTUFILE}) <(sort -k 1 ${MAPFILE}) | perl -pe "s/\\s/\\n/g" >> ${GOODSEQIDS} &&
 {% endhighlight %}
 
-7) Using QIIME's filter_fasta to remove detected chimeras from the original fasta file
+8) Use QIIME to get all the nonchimeric sequences from the original fasta file using the ID'd "good" reads.
 {% highlight bash %}
-filter_fasta.py -f ${INFILE} -o ${NOCHIM} -s ${BADSEQIDS} -n
+filter_fasta.py -f ${INFILE} -o ${NOCHIM} -s ${GOODSEQIDS}
 {% endhighlight %}
 
-I can then concatenate all chimera-depleted fasta files into a new file called "all_kostka_seqs.trim_nochim.fasta"
+Links to the [pipeline PBS script]({{ site.url }}/assets/internal_files/multiple_qsub_chimera_detection.txt) and the [multiple submission shell script]({{ site.url }}/assets/internal_files/multiple_job_submit.txt) that contains the variable names needed
 
-The pipeline for running this on our cluster is in 2 files, a PBS script that contains the commands, and a submission script that will run this PBS on each individual sequence library. I'm working on getting a javascript implemented to collapse this section.
 
-<script src="/assets/js/collapse.js" type="text/javascript"></script>
-<h3 style="cursor: pointer;">Our Cluster Code</h3>
-<div class="collapse">
+## Testing results and troubleshooting
+
+Following the pipeline there were 43 fasta files present as input and missing from the chimera removal output
+
 {% highlight bash %}
-#PBS -N testing_multiple_job_submission
-#PBS -l nodes=1:ppn=1
-#PBS -l mem=4gb
-#PBS -l walltime=6:00:00
-#PBS -q iw-shared-6
-#PBS -j oe
-#PBS -o job_output_files/out.test_submission
-#PBS -m abe
-#PBS -M waoverholt@gmail.com
+#To count the number of samples used in the input
+#path was $HOME/data/qiime_files/all_gom_seqs/ind_fasta_files
+find ./ -maxdepth 1 -type f > ../list_of_ind_fasta_files.txt
+perl -i.bak -pe 's/.*\/(.*)/$1/g' list_of_final_chim.txt
 
-#dereplicate files
-usearch1.7.0 -derep_fulllength ${INFILE} -output ${OUTFILE} -uc ${UCFILE} -sizeout &&
+#To count the output files
+find denovo_chimera2/ -regex ".*final.*" -maxdepth 1 > ../list_of_final_chim.txt
+perl -i.bak -pe 's/(.*)\.nochim\.final(\..*)/$1$2/g' list_of_final_chim.txt
 
-#identify chimeras
-usearch1.7.0 -uchime_denovo ${OUTFILE} -chimeras ${CHIMFILE} &&
-
-#convert uc file to a qiime map file
-~/overholt_scripts/convert_uc2map.py ${UCFILE} > ${MAPFILE} &&
-
-#grab all singletons that are not present in the OTU map file
-perl -ne 'if ($_ =~ m/>/ && $_ =~ m/size=1;/) { ($ID = $_) =~ s/>(.*);size.*/$1/; print $ID }' ${CHIMFILE} > ${BADSEQIDS} &&
-
-#identify chimeric dereps
-perl -ne 'if ($_ =~ m/>/ && $_ !~ m/size=1;/) {($ID = $_) =~ s/>(.*);size.*/$1/; print $ID;}' ${CHIMFILE} > ${BADOTUFILE} &&
-
-#grab all seqids associated with chimeric dereps & add to previously id'd chimeras
-join -j 1 <(sort -k 1 ${BADOTUFILE}) <(sort -k 1 ${MAPFILE}) | perl -pe 's/\s/\n/g' >> ${BADSEQIDS}
-
-#remove detected chimeras from original fasta file
-
-export WORKON_HOME=$HOME/data/program_files/VirtualEnvs
-source $HOME/.local/bin/virtualenvwrapper.sh
-workon qiime1.9.1
-
-filter_fasta.py -f ${INFILE} -o ${NOCHIM} -s ${BADSEQIDS} -n
+#Find samples that don't exist in the final_chim file
+comm -23 <(sort list_of_ind_fasta_files.txt) <(sort list_of_final_chim.txt)
 {% endhighlight %}
 
+Writing a quick bash script to figure out if the fasta files were run but executed with an error
 {% highlight bash %}
 #!/bin/bash
-for FILE in $(find ~/data/qiime_files/all_gom_seqs/ind_samp_seqs/ -type f);
-do
-    BASE=${FILE%.fasta}
-    qsub -v INFILE=$FILE,OUTFILE="$BASE.derep.fasta",UCFILE="$BASE.uc",CHIMFILE="$BASE.chimeras.fasta",MAPFILE="$BASE.uc.map",BADSEQIDS="$BASE.badseqids.txt",BADOTUFILE="$BASE.otu_chim.txt",NOCHIM="$BASE.nochim.fasta" job_scripts/multiple_qsub_test.pbs
+WORK_DIR=$HOME/job_output_files/;
+F_LIST=$HOME/samples_missing_chim_detect.txt
+for FILE in $(find $WORK_DIR -type f -regex ".*chimera.*"); do
+    for LINE in $(cat $F_LIST); do
+	if grep --quiet $LINE $FILE; then
+	    echo $FILE
+	fi
+    done;
+done
+
+#No detected files, looks like they just weren't run for some reason? Going to resubmit just them!
+
+#Trying to find the raw fasta files that were skipped
+find $HOME/data/qiime_files/all_gom_seqs/ind_samp_seqs/ -maxdepth 1 -type f > full_path_list_all_ind_fasta_files.txt
+
+##################
+#!/bin/bash 
+mkdir -p "$WORK_DIR/denovo_chimera_fix_failures"
+#List of all the individual fasta files
+FILE_LIST=$HOME/data/qiime_files/all_gom_seqs/full_path_list_all_ind_fasta_files.txt
+#List of those missing from the first round
+FAILED_LIST=$HOME/data/qiime_files/all_gom_seqs/samples_missing_chim_detect.txt
+
+#loop over each individual file
+for FILE in $(cat $FILE_LIST); do
+#loop over each line in the failed list (only 43) & if they match then execute pipeline
+    for LINE in $(cat $FAILED_LIST); do
+	#echo "current file is $FILE";
+	#echo "the matching pattern from failures is: $LINE";
+	if [[ $FILE =~ $LINE ]]; then
+	    echo $FILE;
+	    BASE=${FILE%.fasta}
+	    BASE_NAME=$(basename ${FILE%.fasta})
+	    BASE="$WORK_DIR/denovo_chimera_fix_failures/$BASE_NAME"
+	    qsub -v INFILE=$FILE,OUTFILE="$BASE.derep.fasta",UCFILE="$BASE.uc",NONCHIMFILE="$BASE.nonchimeras.fasta",NONCHIMNONREF="$BASE.nonchim.nonchimref.fasta",MAPFILE="$BASE.uc.map",GOODSEQIDS="$BASE.goodseqids.txt",GOODOTUFILE="$BASE.goodotuids.txt",NOCHIM="$BASE.nochim.final.fasta" job_scripts/multiple_qsub_chimera_detection.pbs
+	fi
+    done
+done
+######################
+
 {% endhighlight %}
-</div>
+
+Dammit, something weird is going on where not all the jobs are getting executed. First time around ~5% of the jobs failed. This time around 11% failed (5 files).
+
+{% highlight bash %}
+#$HOME/data/qiime_files/all_gom_seqs/ind_samp_seqs/denovo_chimera_fix_failures
+find ./ -name "*.final.*" -type f | perl -pe 's/\.\/(.*)\.nochim.final(.*)/$1$2/g' > ../../samples_missing_2nd_try.txt
+
+comm -23 <(sort ../../samples_missing_chim_detect.txt) <(sort ../../samples_missing_2nd_try.txt) > ../../samples_to_rerun_2nd.txt
+
+#rerun the above bash script modifying the FAILED_LIST to point to "samples_to_rerun_2nd.txt"
+{% endhighlight %}
+
+Next I want to move all the *.final.* files to the same directory and delete everything else to clean up my directory (plus it takes forever to loop over!). 
+{% highlight bash %}
+pwd
+#$HOME/data/qiime_files/all_gom_seqs/ind_samp_seqs/denovo_chimera2
+find ./ -not -name "*.final.*" -type f -delete
+
+pwd
+#
+#$HOME/data/qiime_files/all_gom_seqs/ind_samp_seqs/denovo_chimera_fix_failures/
+find ./ -not -name "*.final.*" -type f -delete
+{% endhighlight %}
+
+Move all the final chimera checked files into the same directory & ensure each original fasta file is accounted for
+
+
+
 
 ## OTU Picking
 Although I'm well aware the following is a suboptimal approach after the recent publications from the Schloss lab, I'm stuck with trying to 
