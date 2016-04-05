@@ -1,0 +1,12 @@
+#!/bin/bash
+ 
+WORK_DIR=$HOME/data/qiime_files/all_gom_seqs/ind_samp_seqs
+mkdir -p "$WORK_DIR/denovo_chimera2"
+
+for FILE in $(find $WORK_DIR -type f);
+do
+    BASE=${FILE%.fasta}
+    BASE_NAME=$(basename ${FILE%.fasta})
+    BASE="$WORK_DIR/denovo_chimera2/$BASE_NAME"
+    qsub -v INFILE=$FILE,OUTFILE="$BASE.derep.fasta",UCFILE="$BASE.uc",NONCHIMFILE="$BASE.nonchimeras.fasta",NONCHIMNONREF="$BASE.nonchim.nonchimref.fasta",MAPFILE="$BASE.uc.map",GOODSEQIDS="$BASE.goodseqids.txt",GOODOTUFILE="$BASE.goodotuids.txt",NOCHIM="$BASE.nochim.final.fasta" job_scripts/multiple_qsub_chimera_detection.pbs
+done
