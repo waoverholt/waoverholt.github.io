@@ -12,7 +12,7 @@ excerpt: "Testing out and learning to use some Metagenomic assemblers. Starting 
 
 After working on this for awhile, I stumbled across a blog maintained by [Amanada](http://agelmore.github.io/). I borrowed fairly heavily from some of her experiences and examples. I recommend you check it out, lots of nice, clear posts!
 
-##IDBA-UD
+## IDBA-UD
 I am planning on generating fairly large metagenomic and metatranscriptomic datasets within the next few months. Since I have a little bit of down time while some 16S datasets run through my pipeline, I thought I'd play around with some simulated and publicly available datasets.
 
 One of my good friends recommended starting with [IDBA-UD](http://i.cs.hku.hk/~alse/hkubrg/projects/idba_ud/). I thought I'd try this medium to record my experiences as I'm in the middle of updating my personal website as well.
@@ -73,7 +73,7 @@ Dataset|Time|Test|
 1%     |13m34|test|
 10%    |161m24|test|
 
-##SPAdes
+## SPAdes
 [SPAdes](http://bioinf.spbau.ru/spades){:target="_blank"} is another fairly recent assembler that has options to handle metagenomic datasets. It comes pre-packaged with linux binaries that I was able to use out of the box, always nice.
 
 Installing using the guidelines provided:
@@ -101,7 +101,7 @@ spades.py -o spades_bp101_1 --meta --12 BP101_1.fa --only-assembler
 {% endhighlight %}
 
 
-##MetaVelvet
+## MetaVelvet
 A comparison wouldn't be right without including [MetaVelvet](http://metavelvet.dna.bio.keio.ac.jp/){:target="_blank"}. I had experience using Velvet for single genome assembly during my [Computational Genomics class](http://compgenomics2013.biology.gatech.edu/index.php/Main_Page) and MetaVelvet is well represented in the literature.
 
 Like the above two assemblers, MetaVelvet constructs de Bruijn-graphs to link connected sequences.
@@ -131,7 +131,7 @@ ln -s /nv/hp10/woverholt3/data/program_files/velvet/velvetg /nv/hp10/woverholt3/
 ln -s /nv/hp10/woverholt3/data/program_files/MetaVelvet-1.2.02/meta-velvetg /nv/hp10/woverholt3/bin/meta-velvetg
 {% endhighlight %}
 
-##QUAST
+## QUAST
 Evaluating Metagenomic Assemblies
 
 {% highlight bash %}
@@ -142,7 +142,7 @@ cd quast-3.2
 python metaquast.py --test-no-ref
 {% endhighlight %}
 
-##Testing percent of reads used in the assembly
+## Testing percent of reads used in the assembly
 
 
 

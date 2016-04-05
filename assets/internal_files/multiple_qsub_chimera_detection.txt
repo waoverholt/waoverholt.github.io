@@ -1,0 +1,38 @@
+#PBS -N testing_multiple_job_submission
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=10gb
+#PBS -l walltime=6:00:00
+#PBS -q iw-shared-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/out.chimera_detect.${PBS_JOBID}
+#PBS -m e
+#PBS -M waoverholt@gmail.com
+
+#dereplicate files
+usearch1.7.0 -derep_fulllength ${INFILE} -output ${OUTFILE} -uc ${UCFILE} -sizeout &&
+
+#identify chimeras
+usearch1.7.0 -uchime_denovo ${OUTFILE} -nonchimeras ${NONCHIMFILE} &&
+
+usearch1.7.0 -uchime_ref ${NONCHIMFILE} -db /nv/hp10/woverholt3/data/program_files/Silva_ref_dbs/silva.gold.notalign.fasta -nonchimeras ${NONCHIMNONREF} -strand plus &&
+
+#convert uc file to a qiime map file
+$HOME/overholt_scripts/convert_uc2map.py ${UCFILE} > ${MAPFILE} &&
+
+#grab all singletons that are not present in the OTU map file
+perl -ne 'if ($_ =~ m/>/ && $_ =~ m/size=1;/) { ($ID = $_) =~ s/>(.*);size.*/$1/; print $ID }' ${NONCHIMNONREF} > ${GOODSEQIDS} &&
+
+#good to here: goodseqids = 35436 (all the size one)
+
+#identify chimeric dereps
+perl -ne 'if ($_ =~ m/>/ && $_ !~ m/size=1;/) {($ID = $_) =~ s/>(.*);size.*/$1/; print $ID;}' ${NONCHIMNONREF} > ${GOODOTUFILE} &&
+
+#grab all seqids associated with chimeric dereps & add to previously id'd chimeras
+join -j 1 <(sort -k 1 ${GOODOTUFILE}) <(sort -k 1 ${MAPFILE}) | perl -pe "s/\\s/\\n/g" >> ${GOODSEQIDS} &&
+
+export WORKON_HOME=$HOME/data/program_files/VirtualEnvs
+source $HOME/.local/bin/virtualenvwrapper.sh
+workon qiime1.9.1
+
+filter_fasta.py -f ${INFILE} -o ${NOCHIM} -s ${GOODSEQIDS}
+

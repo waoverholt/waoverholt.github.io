@@ -8,6 +8,12 @@
 
 {% include open-graph.html %}
 
+{% if page.custom_js %}
+  {% for js_file in page.custom_js %}
+  <script src="{{ site.url }}/assets/js/{{ js_file }}.js" type="text/javascript"></script>
+  {% endfor %}
+{% endif %}
+
 {% if site.owner.google.verify %}<!-- Webmaster Tools verfication -->
 <meta name="google-site-verification" content="{{ site.owner.google.verify }}">{% endif %}
 {% if site.owner.bing-verify %}<meta name="msvalidate.01" content="{{ site.owner.bing-verify }}">{% endif %}
