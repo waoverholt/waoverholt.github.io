@@ -49,7 +49,23 @@ Using multiple different sizes:
 {% highlight bash %}
 head -n 51855188 BP101.CoupledReads.fa > BP101_10.fa &
 head -n 5185518 BP101.CoupledReads.fa > BP101_1.fa &
+
+#$INPUT=BP101.CoupledReads.fa, BP101_10.fa, BP101_1.fa
+#$OUTPUT=idba_full_mason_seqs, idba_bp101_1, idba_bp101_10
+time idba_ud -r $INPUT --pre_correction -o $OUTPUT --num_threads $PROCS
+
+calc_contig_stats.py -i contig.fa -r ../BP101_CoupledReads.fa
 {% endhighlight %}
+
+[idba_ud pbs script]({{ site.url }}/assets/internal_files/idba_ud.pbs)
+[calc_contig_stats.py]({{ site.url }}/assets/internal_files/calc_contig_stats.py) is a little script I wrote that calculates a few of the assembly values I'm interested in, names:
+			  - Number of Contigs
+			  - N50 value
+			  - Length of longest contig
+			  - Mean contig size
+			  - Number of contigs > 1kb
+			  - Percent of reads used to make assembly
+
 {% comment %}
 <style>
 table{
@@ -100,6 +116,24 @@ Running my 1% dataset:
 spades.py -o spades_bp101_1 --meta --12 BP101_1.fa --only-assembler
 {% endhighlight %}
 
+[spades pbs script]({{ site.url }}/assets/internal_files/spades.pbs)
+
+## Megahit
+Another de Bruijn graph assembler that was created specifically for large complex metagenomic datasets. It has the option to use a GPU to increase the speed of the assembly, but I haven't tried this out yet.
+
+Installing Megahit
+{% highlight bash %}
+git clone https://github.com/voutcn/megahit.git
+cd megahit
+make
+{% endhighlight %}
+
+Testing Megahit on the 1% dataset
+{% highlight bash %}
+$HOME/data/program_files/megahit/megahit -12 $INPUT -o $OUTPUT -t $PROCS --presets meta-large
+
+{% endhighlight %}
+[megahit pbs script]({{ site.url }}/assets/internal_files/megahit.pbs)
 
 ## MetaVelvet
 A comparison wouldn't be right without including [MetaVelvet](http://metavelvet.dna.bio.keio.ac.jp/){:target="_blank"}. I had experience using Velvet for single genome assembly during my [Computational Genomics class](http://compgenomics2013.biology.gatech.edu/index.php/Main_Page) and MetaVelvet is well represented in the literature.
