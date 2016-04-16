@@ -207,4 +207,4 @@ python setup.py install
 
 {% endhighlight %}
 
-{% includes google_analytics %}
+{% include google_analytics.html %}

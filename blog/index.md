@@ -19,4 +19,4 @@ search_omit: true
 {% endfor %}
 </ul>
 
-{% includes google_analytics %}
+{% include google_analytics.html %}

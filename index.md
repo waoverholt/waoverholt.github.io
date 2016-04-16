@@ -16,4 +16,4 @@ In order to understand how natural microbes responsed to the oil spill we first 
 
 A larger goal of my research is to understand the roles of interactions between microbes in a complex assemblage in responding to a large scale disturbance, like an oil spill. I am interested in why we see multiple, closely related populations, co-existing in an environment and how this diversity is maintained through time. Furthermore I am interested in the genetic mechanisms that exploit (or create) niches, and the role of community interactons on maintaining or defining these niches.
 
-{% includes google_analytics %}
+{% include google_analytics.html %}

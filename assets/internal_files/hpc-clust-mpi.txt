@@ -1,0 +1,29 @@
+#PBS -N mpi-hpc-clust-align
+#PBS -l nodes=10:ppn=4
+#PBS -l mem=50gb
+#PBS -l walltime=01:00:00:00
+#PBS -q biocluster-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/hpc-clust-deepc.$PBS_JOBID
+#PBS -m abe
+#PBS -M waoverholt@gmail.com
+
+module unload gcc/4.7.2
+module load intel/14.0.2 openmpi/1.6
+
+INPUT=$HOME/data/qiime_files/all_gom_seqs/test_fastas/infernal_align_hpc_clust/pre_clustered_seqs_sized_sorted_aligned.11280223.shared-sched.pace.gatech.edu.pfam
+PROCS=`wc -l < ${PBS_NODEFILE}`
+
+echo "started on `/bin/hostname`"
+echo
+echo "PATH is [$PATH]"
+echo
+echo "Nodes chosen are:"
+cat $PBS_NODEFILE
+echo
+
+COMMAND="mpirun -np $PROCS -hostfile $PBS_NODEFILE /usr/local/packages/hpc-clust/1.1.1/openmpi-1.6.2/intel-14.0.2/bin/hpc-clust-mpi -al true $INPUT"
+
+time $COMMAND
+
+echo $COMMAND
