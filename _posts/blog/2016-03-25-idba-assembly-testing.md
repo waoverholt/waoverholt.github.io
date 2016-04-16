@@ -206,3 +206,5 @@ git clone http://github.com/BinPro/CONCOCT
 python setup.py install
 
 {% endhighlight %}
+
+{% include google_analytics.html %}

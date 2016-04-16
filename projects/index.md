@@ -6,6 +6,8 @@ image:
     feature: ship_sunset_cropped.jpg
 ---
 
+(Currently Under Construction)
+
 ## Biogeography of Deep Ocean Sedimentary Microbes
 
 ## Beaches Impacted by Oil
@@ -15,4 +17,4 @@ image:
 ## Uranium Bioremediation
 
  
-{% includes google_analytics %}
+{% include google_analytics.html %}

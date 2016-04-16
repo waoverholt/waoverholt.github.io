@@ -87,3 +87,6 @@ An easier way to update both master and source from the development.
 git checkout development
 git pull . development
 {% endhighlight %}
+
+{% include google_analytics.html %}
+
