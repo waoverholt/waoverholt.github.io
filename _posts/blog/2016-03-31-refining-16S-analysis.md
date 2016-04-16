@@ -3,6 +3,7 @@ layout: post
 title: Refining 16S Analysis for Deep Ocean Sediments
 excerpt: "Tracking progress on finalizing deep ocean 16S sequence analysis"
 custom_js: collapse
+modified: 2016-04-05
 ---
 
 * Table of Contents
@@ -176,8 +177,12 @@ find ./ -not -name "*.final.*" -type f -delete
 
 Move all the final chimera checked files into the same directory & ensure each original fasta file is accounted for
 
-
-
+{% highlight bash %}
+find ind_samp_seqs/denovo_chimera2/ -type f > list_chim_checked_fasta.txt
+perl -i.bak -pe 's/.*\/.*\/(.*)\.nochim.final(.*)/$1$2/g' list_chim_checked_fasta.txt
+#all files that appear in both (result = 890)
+comm -12 <(sort list_of_ind_fasta_files.txt) <(sort list_chim_checked_fasta.txt) | wc -l
+{% endhighlight %}
 
 ## OTU Picking
 Although I'm well aware the following is a suboptimal approach after the recent publications from the Schloss lab, I'm stuck with trying to 

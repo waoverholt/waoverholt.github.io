@@ -10,6 +10,25 @@ excerpt: "Testing out and learning to use some Metagenomic assemblers. Starting 
 * Table of Contents
 {:toc}
 
+<style>
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+    border:2px solid #000000;
+}
+
+th{
+    border:2px solid #000000;
+}
+
+td{
+    border:1px solid #000000;
+}
+tr:nth-child(even) {
+    background-color: #ccc;
+}
+</style>
+
 After working on this for awhile, I stumbled across a blog maintained by [Amanada](http://agelmore.github.io/). I borrowed fairly heavily from some of her experiences and examples. I recommend you check it out, lots of nice, clear posts!
 
 ## IDBA-UD
@@ -66,29 +85,6 @@ calc_contig_stats.py -i contig.fa -r ../BP101_CoupledReads.fa
 			  - Number of contigs > 1kb
 			  - Percent of reads used to make assembly
 
-{% comment %}
-<style>
-table{
-    border-collapse: collapse;
-    border-spacing: 0;
-    border:2px solid #ff0000;
-}
-
-th{
-    border:2px solid #000000;
-}
-
-td{
-    border:1px solid #000000;
-}
-</style>
-{% endcomment %}
-
-Dataset|Time|Test|
--------|:----:|----:|
-1%     |13m34|test|
-10%    |161m24|test|
-
 ## SPAdes
 [SPAdes](http://bioinf.spbau.ru/spades){:target="_blank"} is another fairly recent assembler that has options to handle metagenomic datasets. It comes pre-packaged with linux binaries that I was able to use out of the box, always nice.
 
@@ -135,36 +131,6 @@ $HOME/data/program_files/megahit/megahit -12 $INPUT -o $OUTPUT -t $PROCS --prese
 {% endhighlight %}
 [megahit pbs script]({{ site.url }}/assets/internal_files/megahit.pbs)
 
-## MetaVelvet
-A comparison wouldn't be right without including [MetaVelvet](http://metavelvet.dna.bio.keio.ac.jp/){:target="_blank"}. I had experience using Velvet for single genome assembly during my [Computational Genomics class](http://compgenomics2013.biology.gatech.edu/index.php/Main_Page) and MetaVelvet is well represented in the literature.
-
-Like the above two assemblers, MetaVelvet constructs de Bruijn-graphs to link connected sequences.
-
-Since I'm mostly in the exploratory phase (avoiding getting bogged down and overwhelmed), I'm not planning on testing the supervisted-learning MetaVelvet module at this time. Furthermore, there really aren't that many genomes available for the environments I will be working on so getting the model might end up making things worse.
-
-{% highlight bash %}
-cd $HOME/data/program_files
-wget http://metavelvet.dna.bio.keio.ac.jp/src/MetaVelvet-1.2.02.tgz
-tar -zxvf MetaVelvet-1.2.02.tgz
-{% endhighlight %}
-
-I wasn't sure good max kmer size or category sizes to use so I just ran make and it seemed to work. May have go back and re-compile at a future date. Looks like the default values are: MAXKMERLENGTH=63, CATEGORIES=2
-{% highlight bash %}
-make
-{% endhighlight %}
-
-The make succeeded with no errors. However, I needed to read more carefully and install Velvet as well.
-
-{% highlight bash %}
-git clone https://github.com/hacchy/velvet
-make
-
-#Make symbolic links to all the executable files so they are in my $PATH
-ln -s /nv/hp10/woverholt3/data/program_files/velvet/velvetg /nv/hp10/woverholt3/bin/velvetg
-ln -s /nv/hp10/woverholt3/data/program_files/velvet/velvetg /nv/hp10/woverholt3/bin/velvetg
-ln -s /nv/hp10/woverholt3/data/program_files/MetaVelvet-1.2.02/meta-velvetg /nv/hp10/woverholt3/bin/meta-velvetg
-{% endhighlight %}
-
 ## QUAST
 Evaluating Metagenomic Assemblies
 
@@ -174,10 +140,69 @@ tar -xzf quast-3.2.tar.gz
 cd quast-3.2
 
 python metaquast.py --test-no-ref
+
+metaquast.py --max-ref-num 0 --threads 10 contig.fa
+
+cat quast_results/latest/report.txt
 {% endhighlight %}
 
-## Testing percent of reads used in the assembly
+## Results to date
 
+| |IDBA_UD_1%|IDBA_UD_10%|IDBA_UD_100%|SPAdes_1%|SPAdes_10%|SPAdes_100%|Megahit_1%|Megahit_10%|Megahit_100%|
+-------|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|----:|
+Time|13m34|161m24|FAILED|59m32|997m25|FAILED|11m40|167m34|701m21|
+Memory (Gb)| | |192| | |102| | |48|
+Contigs|1,834|62,749| |15,074|304,115| |1,430|64,320|771,306|
+Contigs > 500bp|363|16,005| |273|12,043| |250|12,211|166,899|
+Contigs > 1kb|68|3,023| |43|1,845| |44|1,955|35,348|
+N50|414|459| |237|257| |387|405|442|
+N50 (>500bp)|818|809| |736|744| |771|759|883|
+Max Contig|5,485|24,394| |5,441|22,375| |5,473|14,971|71,426|
+Mean Contig|453|487| |224|267| |409|422|460|
+Total Length (>500bp)|306,037|13,467,620| |213,926|9,558,868| |200,843|9,691,657|15,238,454|
+Percent Reads Used|2.7|9.7| |4.8|14.7| |2.2|9.6|23.7|
 
+IDBA_UD and SPAdes keep running out of RAM on the full dataset. We only have 2 high memory nodes on our cluster, so they've bee in queue for awhile now waiting for enough ram. I'll update the table with the results.
 
+However, I'm pretty happy with Megahit. Much more efficient memory usage, CPU times are very similar to IDBA_UD, and the stats are similar (slightly lower % reads used, slightly shorter contigs on average, the longest contigs tend to be shorter etc...) However, I am not benchmarking these aligners with mock datasets, so I don't know the fidelity of the contigs.
 
+Also, I stumbled across [Dr. Titus Brown's blog](http://ivory.idyll.org/blog/category/personal.html) again, and his group [recommends](http://ivory.idyll.org/blog/2016-partitioning-no-more.html) using Megahit, with a review found [here](http://ivory.idyll.org/blog/2014-how-good-is-megahit.html)
+
+## CONCOCT binning
+I will probably end up moving this to a new blog post, but since this one is currently open I'll put the text here for now.
+
+I'm installing CONCOCT on our cluster using anaconda
+
+{% highlight bash %}
+# Installing dependencies
+
+#bedtools2
+git clone https://github.com/arq5x/bedtools2
+cd bedtools2
+make
+
+#gnu parallel - availabe on our cluster already
+module load gnuparallel/20150422
+
+#samtools - already installed
+
+#bowtie2 - already installed
+
+#blast - already installed
+
+#picard - available on cluster
+module load picardtools/1.93
+
+#Installing CONCOCT
+module load anaconda2/2.1.0
+conda create -n concoct_env python=2.7.6
+
+source activate concoct_env
+
+conda install cython numpy scipy biopython pandas pip scikit-learn
+
+git clone http://github.com/BinPro/CONCOCT
+
+python setup.py install
+
+{% endhighlight %}
