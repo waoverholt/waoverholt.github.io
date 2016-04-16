@@ -1,0 +1,32 @@
+#PBS -N Cherry-mpi-infernal-align
+#PBS -l nodes=20:ppn=4
+#PBS -l mem=20gb
+#PBS -l walltime=20:00:00
+#PBS -q biocluster-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/mpi_infernal_aligner_111614_Cherry.$PBS_JOBID
+#PBS -m abe
+#PBS -M waoverholt@gmail.com
+
+module load mvapich2/1.9
+
+cd $TMPDIR
+
+OUTPUT=$HOME/data/qiime_files/all_gom_seqs/test_fastas/infernal_align_hpc_clust/pre_clustered_seqs_sized_sorted_aligned.$PBS_JOBID.pfam
+CM=$BACT_CM
+INPUT=$HOME/data/qiime_files/all_gom_seqs/test_fastas/test_600k_nochim.fasta
+PROCS=`wc -l < ${PBS_NODEFILE}`
+
+echo "started on `/bin/hostname`"
+echo
+echo "PATH is [$PATH]"
+echo
+echo "Nodes chosen are:"
+cat $PBS_NODEFILE
+echo
+
+COMMAND="mpirun -np $PROCS -hostfile $PBS_NODEFILE cmalign --mpi -o $OUTPUT --outformat Pfam --matchonly --mxsize 5000 --noprob $CM $INPUT"
+
+time $COMMAND
+
+echo $COMMAND
