@@ -186,3 +186,5 @@ comm -12 <(sort list_of_ind_fasta_files.txt) <(sort list_chim_checked_fasta.txt)
 
 ## OTU Picking
 Although I'm well aware the following is a suboptimal approach after the recent publications from the Schloss lab, I'm stuck with trying to 
+
+{% includes google_analytics %}
