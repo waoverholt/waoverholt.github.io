@@ -187,4 +187,41 @@ comm -12 <(sort list_of_ind_fasta_files.txt) <(sort list_chim_checked_fasta.txt)
 ## OTU Picking
 Although I'm well aware the following is a suboptimal approach after the recent publications from the Schloss lab, I'm stuck with trying to 
 
+Using the QIIME open reference (take 20) pipeline. I've upped the percent subsampling to 10% to try and see if I can reduce the size of failures.failures that get passed to step4.
+
+{% highlight bash %}
+#PBS -N qiime_open_ref
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=5gb
+#PBS -l walltime=10:00:00:00
+#PBS -q biocluster-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/new_deepc_otus.$PBS_JOBID
+#PBS -m abe
+#PBS -M waoverholt@gmail.com
+
+export WORKON_HOME=$HOME/data/program_files/VirtualEnvs
+source $HOME/.local/bin/virtualenvwrapper.sh
+export QIIME_CONFIG_FP=/nv/hp10/woverholt3/data/program_files/VirtualEnvs/qiime1.9.1/qiime_config_cluster
+
+workon qiime1.9.1
+module load R/3.2.2
+
+INPUT=$HOME/data/qiime_files/all_gom_seqs/all_kostka_seqs.trim_nochim.fasta
+OUTPUT=$HOME/data/qiime_files/all_gom_seqs/qiime_open_ref_20160502
+PARAMS=$HOME/data/program_files/qiime1.8/qiime_params
+
+pick_open_reference_otus.py -i $INPUT -o $OUTPUT -p $PARAMS -a -O 100 --suppress_align_and_tree -s 0.1
+{% endhighlight %}
+
+Trying to fix a previous run that used 0.1 % subsampling (the qiime default). At the end of step3 I had 16 million sequences left (a lot, but didn't seem too bad). However, after trying to denovo cluster them for 13 days and having the job still not be completed I thought I'd try a different strategy.
+
+It seems like either something happenend to a subset of these sequences that is preventing them from clustering well. I'm going to re-subsample at 10% and see if I can figure out what is going on.
+
+Subsampling using an Enveomics script.
+{% highlight bash%}
+FastA.subsample.pl -f 10 -r 1 failures_failures.fasta
+{% endhighlight %}
+
+
 {% include google_analytics.html %}

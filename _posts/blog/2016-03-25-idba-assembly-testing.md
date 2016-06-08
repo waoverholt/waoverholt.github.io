@@ -29,7 +29,7 @@ tr:nth-child(even) {
 }
 </style>
 
-After working on this for awhile, I stumbled across a blog maintained by [Amanada](http://agelmore.github.io/). I borrowed fairly heavily from some of her experiences and examples. I recommend you check it out, lots of nice, clear posts!
+After working on this for awhile, I stumbled across a blog maintained by [Amanda](http://agelmore.github.io/). I borrowed fairly heavily from some of her experiences and examples. I recommend you check it out, lots of nice, clear posts!
 
 ## IDBA-UD
 I am planning on generating fairly large metagenomic and metatranscriptomic datasets within the next few months. Since I have a little bit of down time while some 16S datasets run through my pipeline, I thought I'd play around with some simulated and publicly available datasets.
@@ -159,7 +159,7 @@ N50|414|459| |237|257| |387|405|442|
 N50 (>500bp)|818|809| |736|744| |771|759|883|
 Max Contig|5,485|24,394| |5,441|22,375| |5,473|14,971|71,426|
 Mean Contig|453|487| |224|267| |409|422|460|
-Total Length (>500bp)|306,037|13,467,620| |213,926|9,558,868| |200,843|9,691,657|15,238,454|
+Total Length (>500bp)|306,037|13,467,620| |213,926|9,558,868| |200,843|9,691,657|152,384,054|
 Percent Reads Used|2.7|9.7| |4.8|14.7| |2.2|9.6|23.7|
 
 IDBA_UD and SPAdes keep running out of RAM on the full dataset. We only have 2 high memory nodes on our cluster, so they've bee in queue for awhile now waiting for enough ram. I'll update the table with the results.
@@ -204,7 +204,54 @@ conda install cython numpy scipy biopython pandas pip scikit-learn
 git clone http://github.com/BinPro/CONCOCT
 
 python setup.py install
-
 {% endhighlight %}
 
+### Running CONCOCT
+I'm following the [full example](https://concoct.readthedocs.io/en/latest/complete_example.html) provided by the CONCOCT developers.
+
+Setting up the environment:
+{% highlight bash %}
+module load gnuparallel/20150422; module load picardtools/1.93; module load samtools; module load anaconda2/2.1.0
+source activate concoct_env
+
+CONCOCT=$HOME/data/program_files/CONCOCT/
+export MRKDUP=/usr/local/packages/picardtools/1.93/lib/MarkDuplicates.jar
+export PATH=$PATH:$HOME/data/program_files/bedtools2/bin
+{% endhighlight %}
+
+Cut up the contigs (using the megahit assembly of the 10% dataset)
+{% highlight bash %}
+cd ~/scratch/megahit_bp101_10/
+mkdir concoct
+cd concoct
+
+#-c = chuck size, -o = overlap size, -m = flag, concatenate final part to last contig
+$CONCOCT/scripts/cut_up_fasta.py -c 10000 -o 0 -m ../final.contigs.fa > final.contigs_c10k.fa
+{% endhighlight %}
+
+Mapping the raw reads back onto the contigs to estimate coverage of each contig.
+
+I need to feed the CONCOCT script non-interleaved fasta files. Unfortunately, I don't have the raw files that were used to make the interleaved ones. Here is a quick perl based one-liner that splits your file into R1 and R2 depending on /1 or /2 at the end of the sequence head. 
+
+Basically, check if the header has a /1 or /2, if so, print the next line. I don't bother moving ahead 2 lines since I don't need it optimized. 
+{% highlight bash %}
+perl -ne 'BEGIN {$next = 0;} if ($next > 0) {print $_; $next = 0;} else {if ($_ =~ m/\/2/) {print $_; $next = 1;} }'
+{% endhighlight %}
+
+{% highlight bash %}
+bowtie2-build final.contigs_c10k.fa final.contigs_c10k.fa
+
+/nv/hp10/woverholt3/data/program_files/CONCOCT/scripts/map-bowtie2-markduplicates.sh -ct 1 -p '-f' ../../BP101_10_R1.fa ../../BP101_10_R2.fa pair final.contigs_c10k.fa asm bowtie2
+#pair = name for the sample used (name refering to R1 & R2)
+#asm = name of the assembly used
+#results in a file: "assembly_name"_"pair_name".*
+
+python /nv/hp10/woverholt3/data/program_files/CONCOCT/scripts/gen_input_tab
+le.py --isbedfiles --samplenames samplename.txt ../final.contigs_c10k.fa asm_pair-smds.coverage > concoct_inputtable.tsv
+
+cut -f1,3- concoct_inputtable.tsv > concoct_inputtableR.tsv
+
+concoct -c 40 --coverage_file bowtie2/concoct_inputtableR.tsv --composition_file ../final.contigs.fa -b concoct_output/
+
+{% endhighlight %}
 {% include google_analytics.html %}
