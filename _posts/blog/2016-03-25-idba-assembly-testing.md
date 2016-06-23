@@ -129,7 +129,7 @@ Testing Megahit on the 1% dataset
 $HOME/data/program_files/megahit/megahit -12 $INPUT -o $OUTPUT -t $PROCS --presets meta-large
 
 {% endhighlight %}
-[megahit pbs script]({{ site.url }}/assets/internal_files/megahit.pbs)
+[megahit pbs script]({{ site.url }}/assets/internal_files/megahit2.pbs)
 
 ## QUAST
 Evaluating Metagenomic Assemblies
