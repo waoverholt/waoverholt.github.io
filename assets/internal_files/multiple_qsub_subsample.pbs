@@ -1,0 +1,11 @@
+#PBS -N multiple_fasta_subsampling
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=10gb
+#PBS -l walltime=12:00:00
+#PBS -q iw-shared-6
+#PBS -j oe
+#PBS -o job_output_files/out.multple_fasta_subsample
+
+
+/usr/bin/time -v $HOME/data/program_files/enveomics/Scripts/FastA.subsample.pl -f 1 ${INFILE}
+
