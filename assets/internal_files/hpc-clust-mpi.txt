@@ -5,8 +5,6 @@
 #PBS -q biocluster-6
 #PBS -j oe
 #PBS -o $HOME/job_output_files/hpc-clust-deepc.$PBS_JOBID
-#PBS -m abe
-#PBS -M waoverholt@gmail.com
 
 module unload gcc/4.7.2
 module load intel/14.0.2 openmpi/1.6

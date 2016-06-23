@@ -5,8 +5,6 @@
 #PBS -q biocluster-6
 #PBS -j oe
 #PBS -o $HOME/job_output_files/mpi_infernal_aligner_111614_Cherry.$PBS_JOBID
-#PBS -m abe
-#PBS -M waoverholt@gmail.com
 
 module load mvapich2/1.9
 
