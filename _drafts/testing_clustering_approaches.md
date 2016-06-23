@@ -237,5 +237,69 @@ parallel_pick_otus_uclust_ref.py -i $INPUT -o $OUTPUT -z -O 50 -r $GG_otus -s 0.
 On the test dataset I got 532 sequences that failed. I really doubt this is the issue.
 Of these ~169 were phiX. Still working on the other 350, but not that important in the big scheme of things (I think). 
 
+## Restart QIIME
+I had started with the qiime open reference OTU picking pipeline with subsampling failed sequences set at 0.1% (qiime default). Using this setting the final step (Step 4 according to the QIIME labeling scheme) failed to finish denovo OTU clustering on the remaining 16 million sequences (called failures_failures.fasta). This was ~10% of my dataset and I did not want to give up that many sequences.
+
+These data are at the path: ~/data/qiime_files/all_gom_seqs/qiime_open_ref_20160212/
+
+So following the same scheme, I subsampled these 16 million sequences to 10% (1.68 million) using an enveomics subsampling script.
+
+Clustered with denovo UCLUST at 97% similarity, giving 900,000 OTUs.
+
+Pick representative sequences for these 900,000 otus.
+
+Use these as reference sequences for reference based uclust
+
+{% highlight bash %}
+parallel_pick_otus_uclust_ref.py -i ../failures_failures.fasta -o parallel_ref_uclust -r sub_samp10_rep_set.fasta -T --jobs_to_start 30 -z
+{% endhighlight %}
+
+There were 8.6 million sequences that failed to cluster (~50% of what I started with). 
+
+Filter_fasta to get these failed sequences:
+{% highlight bash %}
+filter_fasta.py -f ../../failures_failures.fasta -s failures_failures_failures.txt -o failures_failures_failures.fasta
+{% endhighlight %}
+
+Denovo pick OTUs from the remaining 8 million sequences
+{% highlight bash %}
+
+{% endhighlight %}
+
+## Testing SWARM
+
+I'm following the recommeded pipeline proposed by Dr. [Frédéric Mahé](https://github.com/frederic-mahe/swarm/wiki/Fred's-metabarcoding-pipeline). 
+
+This will be run on the test dataset first to get an idea on the speed and resources needed, and whether it will be feasible to run on the full dataset.
+
+One really nice thing to note is that swarm is able to run denovo OTU clustering on multiple threads. I'm hoping this will speed up the compute time to something reasonable.
+
+{% highlight bash %}
+~/data/program_files/vsearch-1.9.6/bin/vsearch --derep_fulllength ../test_600k_nochim.fasta --sizein --sizeout --fasta_width 0 --output test600k_nochim_derep.fas --uc test600k_derep.uc
+{% endhighlight %}
+This took a few seconds on 1 core.
+
+Running the swarm clustering, using 6 threads.
+{% highlight bash %}
+time ~/data/program_files/swarm/src/swarm -d 1 -f -t 6 -z -w 
+test600k_swarm_seeds.fa -i test600k_swarm.struct -s test600k_swarm.stats -o test600K_swarm_otus.txt -u test600k_swarm.uc test600k_nochim_derep.fas
+{% endhightlight %}
+This took 3 minutes on 6 cores and produced 193,000 swarms.
+
+To make this go faster, I converted the swarm OTU file into one that QIIME can recognize.
+{% highlight bash %}
+perl -ne 'BEGIN {$count = 0}; print "denovo".$count."\t".$_; 
+$count++;' test600K_swarm_otus.txt > test600K_swarm_qiime_otumap.txt
+
+#Make the OTU table
+make_otu_table.py -i test600K_swarm_qiime_otumap.txt -o test_otu_table.biom
+{% endhighlight %
+
+
+
+
+
+
 
 {% include google_analytics.html %}
+
