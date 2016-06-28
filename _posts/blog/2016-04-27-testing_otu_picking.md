@@ -8,19 +8,20 @@ modified: 2016-06-20
 * Table of Contents
 {:toc}
 
-I've been really struggling to pick OTUs on this large database. In the past I've used the quick and dirty UCLUST method implemented in QIIME, but even these methods have been failing on this dataset. I have not allocated enough time on our cluster and they have timed out afte 10 days (and it takes a long time for these jobs to get scheduled due to the RAM and time amount requested). 
+I've been really struggling to pick OTUs on this large database. In the past I've used the quick and dirty UCLUST method implemented in QIIME, but even these methods have been failing on this dataset. I have not allocated enough time on our cluster and they have timed out after 10 days (and it takes a long time for these jobs to get scheduled due to the RAM and time amount requested). 
 
 I've been meaning to do this kind of test for awhile and I would love to use the HPC-clust method 
 
 ## Trying to use HPC tools
-This has been a project I've picked up several times over the last year. It sounds too good to be true, and in the note - I've never got it to work satisfactorily. The idea is to use the widely regarded average-linkage hierarchical clustering approach to pick OTUs. I've had the opinion that the fastest "greedy" clustering approaches that I've mostly used (uclust) do not do a great job. While I haven't gone to great strides to prove it, uclust often seems to make many OTUs that should all be clustered together, and on the otherside put sequences together that shouldn't be. 
+This has been a project I've picked up several times over the last year. It sounds too good to be true, and in that note - I've never got it to work satisfactorily. The idea is to use the widely regarded average-linkage hierarchical clustering approach to pick OTUs. I've had the opinion that the fastest "greedy" clustering approaches that I've mostly used (uclust) do not do a great job. While I haven't gone to great strides to prove it, uclust often seems to make many OTUs that should all be clustered together, and on the otherside put sequences together that shouldn't be. 
 
 I recently read several of [Pat Schoss's](http://www.schlosslab.org/) latest papers concluding that average-linkage (as used in Mothur) typically work the ["best"](http://www.schlosslab.org/assets/pdf/2015_westcott.pdf) under his test conditions. However, even after dereplication, my largest project libraries have >20 million high quality, [chimera filtered]({% post_url 2016-03-31-refining-16S-analysis %}) sequences.
 
 Here I'm using the [infernal aligner](http://eddylab.org/infernal/) since it has mpi support for rapid alignment of millions of sequences.
 
+This is a test dataset of approximately 600,000 randomly selected sequences.
+
 {% highlight bash %}
-#~ 600,000 sequences
 mpirun -np 80 -hostfile $PBS_NODEFILE (list of nodes) cmalign --mpi -o $OUTPUT --outformat Pfam --matchonly --mxsize 5000 --noprob /nv/hp10/woverholt3/data/program_files/infernal-1.1.1/bacteria_0p1.cm $INPUT
 
 # CPU time: 7373.08u 12.55s 02:03:05.63 Elapsed: 02:21:03.35
@@ -50,7 +51,7 @@ mpirun -np 40 -hostfile "list of hosts" hpc-clust-mpi -al true $INPUT
 
 The hpc-clust program comes with a shell script to convert the results to an OTU table at the distance specified (using 0.97 here).
 
-The average linkage results in 600,000+ OTUs clustered at 0.97. This seems ridiculous and I'm working on getting to the bottom of it. My working assumption is the infernal alignment is not very good, and I'm going to switch to testing mothur's alignment method and clustering, and compare that to this method and mothur's aligment with HPC-clust on a much smaller test database. 
+The average linkage results in 600,000+ OTUs clustered at 0.97. This seems ridiculous considering I was starting with 600,000 OTUS. Using UCLUST (discussed below) I get around 120,000 OTUs. I'm working on getting to the bottom of it. My working assumption is the infernal alignment is not very good, and I'm going to switch to testing mothur's alignment method and clustering, and compare that to this method (using Infernal) and mothur's aligment with HPC-clust on a much smaller test database.
 
 ## OTU picking with MOTHUR
 {% highlight bash %}
@@ -187,12 +188,18 @@ Time to drop it to 10%, 20%, and 50% and see if we can predict the neccessary am
 Running with mpi & using 16 procs.
 
 10% = 38,059 sequences = 24 minutes = 23Gb RAM = 1 OTU
-20% = 75,824 sequences = 
 
-Guess I should have tried the smaller dataset ages ago. Only 1 OTU???
+20% = 75,824 sequences
+
+Guess I should have tried the smaller dataset ages ago. Only 1 OTU, with all pairwise comparisons showing >99% similarity??? Looking at the alignment it doesn't seem like that is the issue. I still need to attempt to use mothur's clustering algorithm to insure this, but that is not too high on my list of priorities since that won't scale to my full dataset.
+
+I'm going to work on benchmarking number of OTUs I can expect from this dataset and see about scaling the QIIME pipelines to my full dataset, which at least gives me some confidence that I can get these sequences clustered!
 
 ## QIIME open reference based pipeline
 This is the pipeline that was written to handle very large sequence databases and has all sorts of issues with it. However, it is fast, scales reasonably well, and probably doesn't distort the ecological picture on a very high level. This may well be what I'm forced to do if I can't figure out a robust method that will complete with the resourses I have available. I will say that even this pipeline fails on the full dataset on step4 (recovering all sequences that failed to cluster against greengenes and the 1% subsampling I used in step2). I have about 16million sequences that failed to be assigned in steps1-3.
+
+*Note: 2016-06-20. These 16 million sequences would very likely be the ones that get discarded due to being singletons, very low abundance, or present in <1% of the samples. Maybe I shouldn't have made this my hill to die on...
+In the end, using SWARM and following some basic OTU trimming (remove singletons and OTUs present in <10% of my library results in the loss of, wait for it, exactly 16 million. You can see this discussed on this post {% post_url 2016-06-20-swarm_clustering %}.
 
 This command was run through the cluster pbs script qiime_open_ref_otus.pbs The qiime command is reproduced below.
 
@@ -205,7 +212,7 @@ pick_open_reference_otus.py -i $HOME/data/qiime_files/all_gom_seqs/test_fastas/t
 
 In the end this method identified 121,171 OTUs (27,438 OTUs after removing singletons). This took ~20 minutes of CPU time (running on 8 nodes, with 50gbs avaiable). All told it took 31 Gbs of RAM (likely double what I needed since these sequences should all be in the same direction).
 
-I am not doing anything nearly as clever as Dr. Pat Schloss about checking the quality and reproducibility of the methods being tested. This is more about scaling, feasibility, and a "gut check" for number of OTU detected. 
+I am not doing anything nearly as clever as Dr. Pat Schloss about checking the quality and reproducibility of the methods being tested. This is more about scaling, feasibility, and a simple "gut check" for number of OTU detected (which I'm debated about whether to mention since it's so nonscientific). However, in my defense these data will be used for broad biogeographical patterns and if I were to look in detail at specific groups, I'd pull all those raw seqeunces out and recluster them correctly. 
 
 ## QIIME denovo clustering with uclust (default)
 I know there are plenty of problems with the greedy clustering algorithm "uclust" and that Dr. Robert Edgar has updated this several times. I have used it many times in the past and I wanted to include this as a baseline connection to other work I've done.
