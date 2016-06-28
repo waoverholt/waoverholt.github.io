@@ -51,7 +51,7 @@ mpirun -np 40 -hostfile "list of hosts" hpc-clust-mpi -al true $INPUT
 
 The hpc-clust program comes with a shell script to convert the results to an OTU table at the distance specified (using 0.97 here).
 
-The average linkage results in 600,000+ OTUs clustered at 0.97. This seems ridiculous considering I was starting with 600,000 OTUS. Using UCLUST (discussed below) I get around 120,000 OTUs. I'm working on getting to the bottom of it. My working assumption is the infernal alignment is not very good, and I'm going to switch to testing mothur's alignment method and clustering, and compare that to this method (using Infernal) and mothur's aligment with HPC-clust on a much smaller test database.
+The average linkage results in 600,000+ OTUs clustered at 0.97. This seems ridiculous considering I was starting with 600,000 sequences. Using UCLUST (discussed below) I get around 120,000 OTUs. I'm working on getting to the bottom of it. My working assumption is the infernal alignment is not very good, and I'm going to switch to testing mothur's alignment method and clustering, and compare that to this method (using Infernal) and mothur's aligment with HPC-clust on a much smaller test database.
 
 ## OTU picking with MOTHUR
 {% highlight bash %}
