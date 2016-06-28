@@ -1,0 +1,76 @@
+#PBS -N swarm
+#PBS -l nodes=1:ppn=16
+#PBS -l mem=40gb
+#PBS -l walltime=12:00:00
+#PBS -q iw-shared-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/out.swarm.txt
+#PBS -m abe
+#PBS -M waoverholt@gmail.com
+
+export WORKON_HOME=$HOME/data/program_files/VirtualEnvs
+source $HOME/.local/bin/virtualenvwrapper.sh
+workon qiime1.9.1
+
+VSEARCH=$HOME/data/program_files/vsearch-1.9.6/bin/vsearch
+SWARM=$HOME/data/program_files/swarm/src/swarm
+PROCS=`wc -l < ${PBS_NODEFILE}`
+
+INPUT=$HOME/data/qiime_files/all_gom_seqs/all_kostka_seqs.trim_nochim.fasta
+WORKDIR=$HOME/data/qiime_files/all_gom_seqs/swarm_full_dataset
+
+set -e
+
+#Check to see if working directory exists
+mkdir -p $WORKDIR
+
+echo "Running VSEARCH to dereplicate"
+echo
+
+/usr/bin/time -v ${VSEARCH} --derep_fulllength $INPUT --sizein --sizeout --fasta_width 0 --relabel "Derep_OTU" --relabel_keep --uc "$WORKDIR/derep_seqs.uc" --output "$WORKDIR/derep_seqs.fasta" &&
+
+echo
+echo "finished running vsearch dereplicate"
+echo
+
+/usr/bin/time -v ~/overholt_scripts/convert_uc2map_overholt.py "$WORKDIR/derep_seqs.uc" > "$WORKDIR/derep_seqs_otumap.txt" &&
+
+echo
+echo "starting to run SWARM"
+echo
+
+/usr/bin/time -v ${SWARM} -d 1 -f -t $PROCS -z -w "$WORKDIR/swarm_seeds.fa" -o "$WORKDIR/swarm_otus.txt" "$WORKDIR/derep_seqs.fasta" &&
+
+echo
+echo "finished running swarm"
+echo
+echo "starting to convert to QIIME compatible map"
+echo 
+
+perl -ne 'BEGIN {$count = 0}; print "denovo".$count."\\t".$_; $count++;' "$WORKDIR/swarm_otus.txt" > "$WORKDIR/swarm_qiime_otumap.txt" &&
+
+sed -i -E 's/;size=[0-9]+;//g' "$WORKDIR/swarm_qiime_otumap.txt" &&
+
+echo
+echo "finished converting swarm to QIIME successfully"
+echo
+
+echo
+echo "Starting to merge the two OTU maps"
+echo 
+
+merge_otu_maps.py -i "$WORKDIR/derep_seqs_otumap.txt","$WORKDIR/swarm_qiime_otumap.txt" -o "$WORKDIR/merged_otumap.txt" &&
+
+echo
+echo "Finished merging OTU maps"
+echo 
+
+echo
+echo "Starting to convert to biom format"
+echo
+
+make_otu_table.py -i "$WORKDIR/merged_otumap.txt" -o "$WORKDIR/final_otutable.biom" &&
+
+echo
+echo "Finished pipeline"
+echo
