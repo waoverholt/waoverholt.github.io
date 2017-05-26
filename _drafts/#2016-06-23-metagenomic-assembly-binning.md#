@@ -1,4 +1,4 @@
----
+444---
 layout: post
 title: "Testing Megahit metagenomic assembly & binning approachs on subsampled metagenomes"
 excerpt: "I'm using what I learned from the metagenomic assembly testing to do a more involved run on a subset of the data while I wait for resources on the cluster to become available to run the full dataset."
@@ -85,5 +85,20 @@ bowtie2-build final.contigs.fa clean_samps
 #Running metabat with default parameters
 "$HOME/data/program_files/metagenomic_binning/berkeleylab-metabat-cbdca756993e/runMetaBat.sh -t $PROCS path/megahit_full_clean/final.contigs.fa path/../bam_files/*.bam"
 [pbs script]({{site.url}}/assets/internal_files/metahit.pbs)
-
 {% endhighlight %}
+
+This finished after 66 hours with 54 identified population bins running on 8 threads with 50Gb available RAM. 
+
+As a first pass on assessing the bin quality, I'm using [CheckM](https://github.com/Ecogenomics/CheckM/wiki).
+
+I made a new virtualenv to run CheckM using virtualenvwrapper.
+{% highlight bash %}
+module load hmmr/3.1b1
+module load prodigal/2.6.1
+module load pplacer/1.1alpha15
+
+mkvirtualenv checkm
+pip install numpy
+pip install checkm-genome
+{% endhighlight %}
+

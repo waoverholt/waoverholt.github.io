@@ -1,0 +1,11 @@
+#PBS -N multiple_sam2bam
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=20gb
+#PBS -l walltime=12:00:00
+#PBS -q iw-shared-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/out.$PBS_JOBNAME.$PBS_JOBID
+#PBS -m e
+#PBS -M waoverholt@gmail.com
+
+/usr/bin/time $HOME/data/program_files/metagenomic_binning/berkeleylab-metabat-cbdca756993e/samtools/bin/samtools view -bS ${INFILE} -o ${INFILE}.bam

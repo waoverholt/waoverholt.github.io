@@ -1,0 +1,12 @@
+#!/bin/bash
+# This hook is sourced after this virtualenv is activated.
+
+module load hmmer/3.1b1
+module load gsl/1.16
+module load hdf5/1.8.14
+module load zoem/11-166
+module load mcl/14-137
+module load muscle/3.8.31
+
+export PATH=$PATH:$HOME/data/program_files/centrifuge
+export PATH=$PATH:$HOME/data/program_files/eggnog-mapper

@@ -1,0 +1,11 @@
+#PBS -N multiple_fasta_subsampling
+#PBS -l nodes=1:ppn=4
+#PBS -l mem=20gb
+#PBS -l walltime=12:00:00
+#PBS -q iw-shared-6
+#PBS -j oe
+#PBS -o $HOME/job_output_files/out.multple_bowtie.$PBS_JOBID
+#PBS -m e
+#PBS -M waoverholt@gmail.com
+
+bowtie2 -x ${INDEX} -U ${INSEQ} -S ${OUTFILE} -p 4 -f

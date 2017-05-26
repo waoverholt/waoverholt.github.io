@@ -3,9 +3,7 @@ layout: post
 title: "Testing Megahit metagenomic assembly & binning approachs on subsampled metagenomes"
 excerpt: "I'm using what I learned from the metagenomic assembly testing to do a more involved run on a subset of the data while I wait for resources on the cluster to become available to run the full dataset."
 ---
-
 * Table of Contents
-
 {:toc}
 
 ## Subsamppling the metagenomes
@@ -19,18 +17,18 @@ I then concatenate all the subsampled libraries into 1 fasta file.
 for FILE in $(ls ind_libs); do cat $FILE >> all_1perc.fa; done
 {% endhighlight %}
 
-I re-used [my previous megahit command]({% post.url 2016-03-25-idba-assembly-testing.md %}/#megahit), trying to get it done in 12 hours with 40Gb of RAM. 
+I re-used [my previous megahit command]({% post_url 2016-03-25-idba-assembly-testing %}/#megahit), trying to get it done in 12 hours with 40Gb of RAM. 
 
 Building the bowtie index of the final contigs file from megahit
 {% highlight bash %}
 bowtie2-build ../../megahit/final.contigs.fa all_deepc_1perc
-
+{% endhighlight %}
 
 Mapping individual sample libraries to the index
 {% highlight bash %}
 bowtie2 -x all_deepc_1perc -U ../../ind_lib
 s/BP101.CoupledReads.fa.1.0000-1.fa -S BP101.sam -f
-
+{% endhighlight %}
 
 Converting the produced SAM file to its corresponding binary BAM file
 {% highlight bash %}
