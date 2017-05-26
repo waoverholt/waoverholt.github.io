@@ -6,7 +6,7 @@ excerpt: "Inserting and visualizing short read sequences into a curated phylogen
 * Table of Contents
 {:toc}
 
-##The plan
+## The plan
 1. Identify the backbone sequences needed to generate the phylogenetic tree.
  - use BLAST or insert in ARB SILVA database
 2. Use RaXML to generate the bootstrapped ML tree from the reference sequences.
@@ -19,7 +19,7 @@ excerpt: "Inserting and visualizing short read sequences into a curated phylogen
 7. Profit
 
 
-##Constructing the Reference Tree
+## Constructing the Reference Tree
 **The set-up.**
 I'm working with a dataset that includes ~800,000 16S amplicon illumina sequences and ~400 mid-full length 16S clone sequences. The environment these come from is poorly characterized and most of the sequences don't have close isolates. The goal is to describe some of the dominant populations and it was decided that longer sequences were needed to improve the confidence in phylogenetic placements.
 
@@ -49,7 +49,7 @@ filter_alignment.py -i arbref_and_otu_aligned.fna -o filter_align -m ~/program_f
 {% endhighlight %}
 
 
-##Constructing the ML bootstrapped tree
+## Constructing the ML bootstrapped tree
 I'm not sure what the most appropriate way to make the reference tree is. It is temping to use the ARB NJ tree since the topology is so well grounded by the 600,000 curated sequences.
 
 However, I am also making a RaXML tree and I'll double check the topologies match.
@@ -62,7 +62,7 @@ However, I am also making a RaXML tree and I'll double check the topologies matc
 
 *Note2: Tree is still not correct, and I ended up using the exported ARB tree.
 
-##Inserting the Illumina Sequences
+## Inserting the Illumina Sequences
 Luckly I have everything I need to do this:
 (1) A tree
 (2) full set of sequences to insert including ref seqs already in the tree
@@ -75,7 +75,7 @@ d_otu_aligned.fna -t RAxML_bipartitionsBranchLabels.REFTREE -m GTRGAMMA -n EPA
 raxmlHPC-PTHREADS -f v -T 5 -s arbref_and_otu_aligned_pfiltered.fasta -t ../raxml/overholt2_small.tree -m GTRGAMMA -n EPA
 {% endhighlight %}
 
-##Creating the dataset showing where illumina sequences placed
+## Creating the dataset showing where illumina sequences placed
 I'm currently using two scripts to convert the jplace file to a format that iToL can recognize.
 
 The first script is written by [Luis M. Rodriguez-R](http://lmrodriguezr.github.io/) in the [enveomics](https://peerj.com/preprints/1900/) collection. I use this script solely to grab the tree that Miguel reformats from the jplace file to play nicely with iToL. If you did your RaXML-EPA mapping in a different way (each sequence library separately) you would be able to only use this script.
