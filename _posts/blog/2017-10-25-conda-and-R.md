@@ -25,6 +25,7 @@ perl -i -pe 's/\.lib/#\.lib/' $HOME/.Rprofile
 {% endhighlight %}
 
 The deactivate.d/Renviron_fix.sh script is:
+{% highlight bash %}
 #source the environment variables (I still think this is unnecessary)
 R_LIBS=$HOME/data/program_files/R_packages
 R_LIBS_USER=$HOME/data/program_files/R_packages
