@@ -1,10 +1,10 @@
----:w
+---
 layout: home
 title: Will A. Overholt
 excerpt: "Will's personal website."
 modified: 2016-03-28
 image:
-  feature: beech_autumn.jpg 
+  feature: beech_autumn_cropped.png
 ---
 
 ## Overview

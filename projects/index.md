@@ -10,7 +10,10 @@ image:
 {:toc}
 
 ## Surface to subsurface linkages in a pristine freshwater aquifer
+Karst aquifers supply up to 25% of the world's population with fresh drinking water. Bacteria and Archaea are the dominant life within these systems and are critical for their healthy functioning, in part, which we rely on for water resources. The [AquaDiva Critical Zone Exploratory](http://www.aquadiva.uni-jena.de/) is addressing these questions in terms of how the surface and subsurface are coupled and how these linkages respond to changing conditions. We study the organisms living across these boundaries, where they get their carbon and nutrients, how contaminants enter and are processed in the aquifer, and how a predicted increase in extreme weather events will impact the system.
 
+For my part, I am interested in the importance of carbon and nutrients from the surface relative to the carbon fixed by indigenous microbes using energy from reduced minerals and compounds in the subsurface. Furthermore, I question if large rain events can overwhelm the system and directly inject a lot of fresh material to the groundwater and what are the consequences to the ecosystem.
+<a href="#top">Back to top </a>
 
 
 ## Biogeography of Deep Ocean Sedimentary Microbes
