@@ -5,11 +5,6 @@ image:
   teaser: shrug.png
 excerpt: "My latest workflow for QAQC, assembly, binning, taxnomic annotation, and functional annotation of environmental metagenomes. It is still in draft form and I'm getting all the pipeline/nextflow scripts together."
 ---
-
-Example Metagenomic Workflow
-======================
-**Author:** *Will Overholt*
-
 * Table of Contents
 {:toc}
 
