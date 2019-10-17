@@ -8,11 +8,11 @@ excerpt: "My latest workflow for QAQC, assembly, binning, taxnomic annotation, a
 * Table of Contents
 {:toc}
 
-The example files & paths shown throughout this workflow are on LUMOS.
+The example files & paths shown throughout this workflow are on the Kuesel Labs server LUMOS. I've set up all the conda environments necessarily already and I don't go into that process here.
 
-I've been testing this protocol on a collection of small test metagenomes (each with exactly 25,000 seqs). The working directory for these examples is here:
+I've been testing this protocol on a collection of small test metagenomes. The working directory for these examples is here:
 
-/home/li49pol/data/Projects/example_metaGs/scripts
+/home/user/data/Projects/example_metaGs/scripts
 
 ## QAQC
 
@@ -21,7 +21,7 @@ In this step we are removing all the adapter sequences, as well as trimming of l
 Here I'm using bbduk from the JGI BBTools suite.
 
 I'm putting everything into a "nextflow" script which is found here:
-/home/li49pol/data/Projects/example_metaGs/scripts/01_metaG_qaqc_bbduk.nf
+/home/user/data/Projects/example_metaGs/scripts/01_metaG_qaqc_bbduk.nf
 
 I'm not very comfortable with nextflow yet, so I wasn't able to get a complete pipeline that would automatically run all the steps. But I have found it to be extremely useful for controlling the servers resources (e.g. running things in parallel in the most effective ways).
 
@@ -62,7 +62,7 @@ spades.py --meta -o spades_miseq_02frac -1 02_qaqc/H41_0_1_1_1.fastq -2 02_qaqc/
 
 I also have a hacked together nextflow script that parallelizes this step in case you have multiple samples.
 ```bash
-cd /home/li49pol/data/Projects/example_metaGs
+cd /home/user/data/Projects/example_metaGs
 nextflow run -c scripts/spades_nextflow.config scripts/02_spades_nextflow.nf
 ```
 
@@ -82,7 +82,7 @@ It depends a bit on your data and your own preferences, but I usually drop scaff
 
 This can be accomplished like so:
 ```bash
-cd /home/li49pol/data/Projects/example_metaGs/03_Assembly/H41_0_2_1/
+cd /home/user/data/Projects/example_metaGs/03_Assembly/H41_0_2_1/
 awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' scaffolds.fasta | paste -d ";" - - | perl -F_ -ane 'if ($F[3] > 999) {print $_};' | sed -e "s/;/\n/g" > scaffolds_1000.fasta
 ```
 
@@ -91,7 +91,7 @@ Then you can run the binning module in metawrap:
 ```bash
 conda deactivate metagenomics
 conda activate metawrap
-cd /home/li49pol/data/Projects/example_metaGs/
+cd /home/user/data/Projects/example_metaGs/
 mkdir 04_Binning
 metawrap binning -o 04_Binning/H41_0_2_1 -t 20 --universal -a 03_Assembly/H41_0_2_1/scaffolds.fasta --maxbin2 --metabat2 02_qaqc/*fastq
 ```
@@ -101,7 +101,7 @@ I'm using the scaffolds >3kb since Binsanity works best with <25,000 reads and I
 
 Drop scaffolds <3kb for binsanity
 ```bash
-cd /home/li49pol/data/Projects/example_metaGs/03_Assembly/H41_0_1_1/
+cd /home/user/data/Projects/example_metaGs/03_Assembly/H41_0_1_1/
 awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' scaffolds.fasta | paste -d ";" - - | perl -F_ -ane 'if ($F[3] > 2999) {print $_};' | sed -e "s/;/\n/g" > scaffolds_3000.fasta
 ```
 
@@ -114,7 +114,7 @@ Next we need to run the differential abundance calculation for binsanity.
 ```bash
 conda deactivate metawrap
 conda activate metagenomics
-cd /home/li49pol/data/Projects/example_metaGs/04_Binning/H41_0_2_1
+cd /home/user/data/Projects/example_metaGs/04_Binning/H41_0_2_1
 #the -s should point to the bam files created by metawrap.
 Binsanity-profile -i ../../03_Assembly/H41_0_2_1/scaffolds_3000.fasta -s work_files/ -T 8 -o binsanity_profile --ids ../../03_Assembly/H41_0_2_1/scaffolds_3000_ids.txt -c binsanity_profile_diff_coverage
 ```
@@ -163,7 +163,7 @@ gtdbtk identify --genome_dir metawrap_bins --out_dir gtdbtk_metawrap_bins -x fa 
 Using barrnap which produces GFF files. Need to parse the results & add them to the massive "compare_bin_stats.ods" file I'm putting together.
 
 ```bash
-#/home/li49pol/data/Projects/Probst_MG/Miseq_MG/06_compare_binning_methods
+#/home/user/data/Projects/Probst_MG/Miseq_MG/06_compare_binning_methods
 mkdir rRNA_hybrid_gffs/
 conda activate metagenomics
 #These are only for the bacterial genomes (need to double check the archaeal ones)
