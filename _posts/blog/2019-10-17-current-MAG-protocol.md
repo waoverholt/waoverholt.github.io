@@ -20,8 +20,10 @@ In this step we are removing all the adapter sequences, as well as trimming of l
 
 Here I'm using bbduk from the JGI BBTools suite.
 
-I'm putting everything into a "nextflow" script which is found here:
+I'm putting everything into a "nextflow" script which is found here on the server:
 /home/user/data/Projects/example_metaGs/scripts/01_metaG_qaqc_bbduk.nf
+
+And [here]({{ site.url }}/assets/internal_files/01_metaG_qaqc_bbduk.nf) on this site.
 
 I'm not very comfortable with nextflow yet, so I wasn't able to get a complete pipeline that would automatically run all the steps. But I have found it to be extremely useful for controlling the servers resources (e.g. running things in parallel in the most effective ways).
 
@@ -65,6 +67,9 @@ I also have a hacked together nextflow script that parallelizes this step in cas
 cd /home/user/data/Projects/example_metaGs
 nextflow run -c scripts/spades_nextflow.config scripts/02_spades_nextflow.nf
 ```
+[Script]({{ site.url }}/assets/internal_files/02_spades_nextflow.nf)
+
+[config]({{ site.url }}/assets/internal_files/spades_nextflow.config)
 
 I recommend using [Metaquast](http://bioinf.spbau.ru/metaquast) to assess your assembly quality
 ```bash
@@ -128,6 +133,8 @@ cd
 mkdir BinSanity-Final-bins-renamed
 i=0; for file in $(find ./BinSanity-Final-bins); do i=$((i+1)); cp $file BinSanity-Final-bins-renamed/"bin$i.fa"; done
 ```
+
+The below steps are in extreme draft form and are really just as examples right now and may be hard to reproduce.
 
 ### Nextflow pipeline for automatic binning
 Need to do this...
