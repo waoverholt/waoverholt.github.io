@@ -1,14 +1,17 @@
-Example Metagenomic Workflow - 17 Oct. 2019
+---
+layout: post
+title: Draft Protocol for Assembling MAGs from Complex Metagenomes
+image:
+  teaser: shrug.png
+excerpt: "My latest workflow for QAQC, assembly, binning, taxnomic annotation, and functional annotation of environmental metagenomes. It is still in draft form and I'm getting all the pipeline/nextflow scripts together."
+---
+
+Example Metagenomic Workflow
 ======================
 **Author:** *Will Overholt*
 
-## Table of Contents
-* [QAQC](#qaqc)
-* [Assembly](#assembly)
-* [Binning](#binning)
-* [Taxonomic Affiliation](#tax)
-* [Search_for_16S](#16S)
-* [Functional Annotation](#annotation)
+* Table of Contents
+{:toc}
 
 The example files & paths shown throughout this workflow are on LUMOS.
 
@@ -16,7 +19,7 @@ I've been testing this protocol on a collection of small test metagenomes (each 
 
 /home/li49pol/data/Projects/example_metaGs/scripts
 
-## Quality Assurance and Quality Control (QAQC) <a name="qaqc"></a>
+## QAQC
 
 In this step we are removing all the adapter sequences, as well as trimming of low quality sequences (phred = 20), and dropping sequences that are shorter than 50 bp. See the parameters that are set below.
 
@@ -52,7 +55,7 @@ conda activate metagenomics
 nextflow run path/to/script/metaG_qaqc_bbduk.nf
 ```
 
-## Assembly <a name="assembly"></a>
+## Assembly
 Here I'm using the metagenome setting within [spades](http://cab.spbu.ru/software/spades/)
 
 This example is for illumina only datasets, running each sample individually & manually
@@ -144,7 +147,7 @@ cd 04_Binning/H41_0_2_1
 metawrap bin_refinement -o metawrap_bin_refinement_50_10 -t 20 -m 350 -c 50 -x 10 -A binsanity_bins/BinSanity-Final-bins-renamed/ -B maxbin2_bins/ -C metabat2_bins/
 ```
 
-## Taxonomic Annotation of Bins <a name="tax"></a>
+## Taxonomic Annotation of Bins
 ### GTDBTK
 The metabat2 bins
 ```bash
@@ -182,7 +185,7 @@ This script has been updated to summarize the number of rRNA genes as well as re
 
 We were surpsingly able to bin a lot of the rRNA genes from both sets...
 
-### Getting coverage information
+## Interfacing with Anvi'o & Refinement
 Seems like as good a time as any to pull everything into anvio.
 ```bash
 cd ~/data/Projects/Probst_MG/Miseq_MG/04_assembly/spades_hybrid_02frac/
