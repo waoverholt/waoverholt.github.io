@@ -100,6 +100,19 @@ cd /home/user/data/Projects/example_metaGs/03_Assembly/H41_0_2_1/
 awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' scaffolds.fasta | paste -d ";" - - | perl -F_ -ane 'if ($F[3] > 999) {print $_};' | sed -e "s/;/\n/g" > scaffolds_1000.fasta
 ```
 
+Metawrap also likes the QAQC read files to be named "sample_name_1.fastq" and "sample_name_2.fastq" for the forward and reverse reads respectively. In my experience, my files are always named "sample_name_something_R1.fastq & sample_name_something_R2.fastq". To address this I usually make symbolic links to the QAQC reads & then change the names of those symbolic links.
+I like this method because it doesn't clog up hard-drive space AND doesn't mess with my QAQC files.
+
+```bash
+cd 02_qaqc/
+mkdir metawrap_format
+#make all the symbolic links
+find `pwd` -name "*fastq" -exec ln -s {} metawrap_format/ \;
+cd metawrap_format
+#remove the R in *_R1.fastq, resulting in *_1.fastq # You may need to modify this if your sample names are different
+for file in $(ls ./); do newname=${file/R/}; echo mv $file $newname; done
+```
+
 Then you can run the binning module in metawrap:
 
 ```bash
@@ -121,6 +134,7 @@ awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { print
 
 The we need to get the sequence headers from this file:
 ```bash
+#Remember to remove the fasta identifier (>) from the id's file
 grep "^>" scaffolds_3000.fasta | sed -e 's/>//g' > scaffolds_3000_ids.txt
 ```
 
