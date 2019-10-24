@@ -94,11 +94,21 @@ Here I like to use 3 different automatic binners, 2 of which are already include
 ### Metawrap
 It depends a bit on your data and your own preferences, but I usually drop scaffolds that are shorter than 1000 bp for these binners.
 
-This can be accomplished like so:
+If you used metaspades (the scaffold size is in the sequence header), this can be accomplished like so:
 ```bash
 cd /home/user/data/Projects/example_metaGs/03_Assembly/H41_0_2_1/
+#the first park (awk statement) concatenates multiline fasta formats (where sequences can span multiple lines)
+#Then it sticks the 2 pieces of a fasta sequence together, separated by a semicolon (e.g. >seqs;ATCTGACTT);
+#Finally it looks at the 4th part of the fasta header, which in metaspades is the sequence length
 awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' scaffolds.fasta | paste -d ";" - - | perl -F_ -ane 'if ($F[3] > 999) {print $_};' | sed -e "s/;/\n/g" > scaffolds_1000.fasta
 ```
+
+If you have a set of contigs / scaffolds without the length info in the header, you can use this one-liner instead:
+```bash
+#This is a similar logic, except we use perl to count the length of the sequence; this should be much more robust than the above command (but no promises)
+awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' contig.fasta | paste -d ";" - - | perl -F/\;/ -ane 'if(length($F[1]) > 999) {print $F[0]."\n".$F[1]}' > contigs_1000.fasta
+```
+
 
 Metawrap also likes the QAQC read files to be named "sample_name_1.fastq" and "sample_name_2.fastq" for the forward and reverse reads respectively. In my experience, my files are always named "sample_name_something_R1.fastq & sample_name_something_R2.fastq". To address this I usually make symbolic links to the QAQC reads & then change the names of those symbolic links.
 I like this method because it doesn't clog up hard-drive space AND doesn't mess with my QAQC files.
