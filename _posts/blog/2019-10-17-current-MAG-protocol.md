@@ -71,6 +71,15 @@ nextflow run -c scripts/spades_nextflow.config scripts/02_spades_nextflow.nf
 
 [config]({{ site.url }}/assets/internal_files/spades_nextflow.config)
 
+It's usually a good idea to check your assembly quality. I've got a fairly quick script that I use that looks at basic assembly statistics for all contigs, contigs > 1kb, and contigs > 3kb. It's pretty easy to modify if you want to get metrics for larger cut off sizes as well.
+It can assess how many of your sequences map to your assembly, but this takes much longer and doesn't break down the results into the same contig size fractions (only reports % mapped to all_contigs).
+This script is located here on lumos:
+```
+/home/li49pol/data/programs/scripts/metagenome_scripts/calc_contig_stats.py
+```
+
+For anyone else interested, a working copy can be downloaded [here]({{ site.url }}/assets/internal_files/calc_contig_stats.py)
+
 I recommend using [Metaquast](http://bioinf.spbau.ru/metaquast) to assess your assembly quality
 ```bash
 metaquast -o metaquast_out -1 02_qaqc/H41_0_1_1_1.fastq -2 02_qaqc/H41_0_1_1_2.fastq path/to/scaffolds.fasta -t 8
@@ -98,7 +107,7 @@ conda deactivate metagenomics
 conda activate metawrap
 cd /home/user/data/Projects/example_metaGs/
 mkdir 04_Binning
-metawrap binning -o 04_Binning/H41_0_2_1 -t 20 --universal -a 03_Assembly/H41_0_2_1/scaffolds.fasta --maxbin2 --metabat2 02_qaqc/*fastq
+metawrap binning -o 04_Binning/H41_0_2_1 -t 20 --universal -a 03_Assembly/H41_0_2_1/scaffolds_1000.fasta --maxbin2 --metabat2 02_qaqc/*fastq
 ```
 
 ### Binsanity
