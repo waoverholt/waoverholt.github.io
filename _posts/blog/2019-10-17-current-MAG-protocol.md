@@ -161,10 +161,10 @@ The we run the binsanity work flow:
 ```bash
 Binsanity-wf -f ../../03_Assembly/H41_0_2_1/ -l scaffolds_3000.fasta -c binsanity_profile_diff_coverage.cov.x100.lognorm -o binsanity_bins --threads 10
 
-#Rename the bins for metawrap
-cd
-mkdir BinSanity-Final-bins-renamed
-i=0; for file in $(find ./BinSanity-Final-bins); do i=$((i+1)); cp $file BinSanity-Final-bins-renamed/"bin$i.fa"; done
+#Generate symbolic links for the bins that metawrap
+cd binsanity_bins/BinSanity-Final-bins/
+mkdir renamed
+i=0; for file in $(find `pwd` -name "*fna"); do i=$((i+1)); ln -s $file renamed/"bin$i.fa"; done
 ```
 
 The below steps are in extreme draft form and are really just as examples right now and may be hard to reproduce.
