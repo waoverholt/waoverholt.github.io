@@ -179,25 +179,31 @@ I really like the [metawrap bin_refinement module](https://github.com/bxlab/meta
 conda deactivate metagenomics
 conda activate 
 cd 04_Binning/H41_0_2_1
-metawrap bin_refinement -o metawrap_bin_refinement_50_10 -t 20 -m 350 -c 50 -x 10 -A binsanity_bins/BinSanity-Final-bins-renamed/ -B maxbin2_bins/ -C metabat2_bins/
+metawrap bin_refinement -o metawrap_bin_refinement_50_10 -t 20 -m 350 -c 50 -x 10 -A binsanity_bins/BinSanity-Final-bins/renamed/ -B maxbin2_bins/ -C metabat2_bins/
 ```
 
 ## Taxonomic Annotation of Bins
+I've been really impressed with the [Genome Taxonomy Database](https://gtdb.ecogenomic.org/), described in [this pre-print](https://www.biorxiv.org/content/10.1101/771964v1) that came out of the Hugenholtz group. Scripts for working with this database are provided [here](https://github.com/Ecogenomics/GTDBTk).
 ### GTDBTK
-The metabat2 bins
+The GTDBTK package comes with a workflow (pipeline) script that did not work for me the first time, so I've been running the 3 steps separately (documented below).
+It's probably been fixed, so feel free to switch to the ```gtdbtk denovo_wf``` version.
+
+On our server, the scripts are available in the conda environment "gtdbtk"
 ```bash
 conda activate gtdbtk
-gtdbtk identify --genome_dir metabat2_bins/ --out_dir metabat2_bins_gtdbtk -x fa --cpus 12
-gtdbtk align --identify_dir gtdbtk_id/ --out_dir gtdbtk_align --cpus 12
-gtdbtk classify --genome_dir metabat2_bins --align_dir metabat2_bins_gtdbtk_id/align/ --out_dir metabat2_bins_gtdbtk_id/gtdbtk_classify -x fa --cpus 12
+gtdbtk identify --genome_dir bins/ --out_dir gtdbtk_id -x fa --cpus 10
+gtdbtk align --identify_dir gtdbtk_id/ --out_dir gtdbtk_align --cpus 10
+gtdbtk classify --genome_dir bins/ --align_dir gtdbtk_align/ --out_dir gtdbtk_classify -x fa --cpus 10
 ```
-More general one-liner for the metawrap refined bins. I still need to wrap this into a short shell script that uses variable names correctly
-Note that these were not the reassembled bins, that did not work very well because I lost too many of the partial genomes that are still interesting
+
+I usually just chain these together into a bash one-liner. At some point I'll either get the denovo_wf working or wrap this into a short shell script that uses variable names correctly.
 
 ```bash
 #Oneliner for all 3 steps
-gtdbtk identify --genome_dir metawrap_bins --out_dir gtdbtk_metawrap_bins -x fa --cpus 20; gtdbtk align --identify_dir gtdbtk_metawrap_bins --cpus 20 --out_dir gtdbtk_metawrap_bins/align; gtdbtk classify --genome_dir metawrap_bins --align_dir gtdbtk_metawrap_bins/align --out_dir gtdbtk_metawrap_bins/classify -x fa --cpus 20
+gtdbtk identify --genome_dir bins/ --out_dir gtdbtk_bins -x fa --cpus 10; gtdbtk align --identify_dir gtdbtk_bins --cpus 10 --out_dir gtdbtk_bins/align; gtdbtk classify --genome_dir bins/ --align_dir gtdbtk_bins/align --out_dir gtdbtk_bins/classify -x fa --cpus 10
 ```
+
+There are a lot of other options out there to try, and you may want to look at [CAT/BAT](https://github.com/dutilh/CAT) as another alternative.
 
 ### Searching for rRNA reads in the MAGs
 Using barrnap which produces GFF files. Need to parse the results & add them to the massive "compare_bin_stats.ods" file I'm putting together.
